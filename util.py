@@ -5,10 +5,18 @@ import re
 from datetime import datetime, timedelta
 
 
+def kyoteiGetCal(url):
+    soup = urlToBs4(url)
+    table = soup.find('div', {'class': "table1"})
+    print(table)
+
+
+def autoRaceGetCal(url):
+    pass
+
+
 def netkeibaGetCal(url):
-    url = url
-    html = requests.get(url).content
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = urlToBs4(url)
     table = soup.find('table', {'class': "Calendar_Table"})
     calTable = table.find_all("td", class_="RaceCellBox")
     kaisaiCal = []
@@ -31,16 +39,15 @@ def netkeibaGetCal(url):
 
 
 def netkeirinSc(url):
-    url = url
-    html = requests.get(url).content
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = urlToBs4(url)
+    mouthSchedule = {}
     table = soup.find('div', {'class': "Race_Calendar_List"})
     calTable = table.find_all("li", {'class': "Calendar_DayList"})
     for cal in calTable:
+        keirinLs = []
         kaisaiDay = cal.find(
             'dt', {'class': "ThisWeek_Day"}).get_text().strip()
         kaisaiD = removeYoubi(kaisaiDay)
-        print(kaisaiD)
         kaisaiJyos = cal.find_all("li", {'class': re.compile("^race_grade_*")})
         for jyo in kaisaiJyos:
             dayDict = {}
@@ -76,7 +83,10 @@ def netkeirinSc(url):
             if morning != None:
                 morning = morning['aria-label']
                 dayDict['morning'] = True
-            print(dayDict)
+            keirinLs.append(dayDict)
+        mouthSchedule[kaisaiD] = keirinLs
+    pprint(mouthSchedule)
+    return mouthSchedule
 
 
 def removeYoubi(youbi):
@@ -84,8 +94,17 @@ def removeYoubi(youbi):
     return newYoubi
 
 
-netkeirinSc(
-    "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
+def urlToBs4(url):
+    url = url
+    html = requests.get(url).content
+    soup = BeautifulSoup(html, 'html.parser')
+    return soup
+
+
+kyoteiGetCal("https://www.boatrace.jp/owpc/pc/race/index?hd=20220607")
+
+# netkeirinSc(
+#     "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
 
 # netkeibaGetCal(
 #     "https://nar.netkeiba.com/top/calendar.html?year=2022&month=6")
