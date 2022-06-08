@@ -2,14 +2,42 @@ from bs4 import BeautifulSoup
 from pprint import pprint
 import requests
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+
+
+def kyoteiMouthUrlParser():
+    baseUrl = "https://www.boatrace.jp/owpc/pc/race/index?hd="
+    d1 = date(2022, 6, 1)
+    d2 = date(2022, 6, 8)
+    for i in range((d2 - d1).days + 1):
+        execDay = d1 + timedelta(i)
+        execDayStr = execDay.strftime("%Y%m%d")
+        url = f'{baseUrl}{execDayStr}'
+        print(execDayStr)
+        kyoteiGetCal(url)
 
 
 def kyoteiGetCal(url):
     soup = urlToBs4(url)
     table = soup.find('div', {'class': "table1"})
     rows = table.find_all("tbody")
-    print(rows[0].find("img")['alt'])
+    dayLs = []
+    for i in rows:
+        dayDict = {}
+        # 開催場所
+        jyo = i.find("img")['alt']
+        dayDict['jyo'] = jyo
+        nighter = i.find('td', {'class': 'is-nighter'})
+        if nighter != None:
+            dayDict['nighter'] = True
+        summer = i.find('td', {'class': 'is-summer'})
+        if summer != None:
+            dayDict['summer'] = True
+        morning = i.find('td', {'class': 'is-morning'})
+        if summer != None:
+            dayDict['morning'] = True
+        dayLs.append(dayDict)
+    pprint(dayLs)
 
 
 def autoRaceGetCal(url):
@@ -59,7 +87,7 @@ def netkeirinSc(url):
             # クラス(F)
             kaisaiClass = jyo.find(
                 'span', {'class': re.compile("^Icon_GradeType Icon_GradeType*")}).get_text().strip()
-            dayDict['classF'] = kaisaiClass
+            dayDict['class'] = kaisaiClass
             # ガールズ
             kaisaiGirls = jyo.find(
                 'span', {'class': "Icon_RaceMark Girls"})
@@ -102,10 +130,11 @@ def urlToBs4(url):
     return soup
 
 
-kyoteiGetCal("https://www.boatrace.jp/owpc/pc/race/index?hd=20220608")
+netkeirinSc(
+    "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
 
-# netkeirinSc(
-#     "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
+
+kyoteiMouthUrlParser()
 
 # netkeibaGetCal(
 #     "https://nar.netkeiba.com/top/calendar.html?year=2022&month=6")
