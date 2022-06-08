@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 def kyoteiGetCal(url):
     soup = urlToBs4(url)
     table = soup.find('div', {'class': "table1"})
-    print(table)
+    rows = table.find_all("tbody")
+    print(rows[0].find("img")['alt'])
 
 
 def autoRaceGetCal(url):
@@ -101,7 +102,7 @@ def urlToBs4(url):
     return soup
 
 
-kyoteiGetCal("https://www.boatrace.jp/owpc/pc/race/index?hd=20220607")
+kyoteiGetCal("https://www.boatrace.jp/owpc/pc/race/index?hd=20220608")
 
 # netkeirinSc(
 #     "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
