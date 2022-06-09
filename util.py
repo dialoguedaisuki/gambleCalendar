@@ -5,10 +5,15 @@ import re
 from datetime import datetime, timedelta, date
 
 
+def autoRaceGetCal(url):
+    # https://www.oddspark.com/autorace/KaisaiRaceList.do?raceDy=20220609
+    pass
+
+
 def kyoteiMouthUrlParser():
     baseUrl = "https://www.boatrace.jp/owpc/pc/race/index?hd="
-    d1 = date(2022, 6, 1)
-    d2 = date(2022, 6, 8)
+    d1 = date(2022, 6, 3)
+    d2 = date(2022, 6, 5)
     for i in range((d2 - d1).days + 1):
         execDay = d1 + timedelta(i)
         execDayStr = execDay.strftime("%Y%m%d")
@@ -27,6 +32,7 @@ def kyoteiGetCal(url):
         # 開催場所
         jyo = i.find("img")['alt']
         dayDict['jyo'] = jyo
+        # 開催種別
         nighter = i.find('td', {'class': 'is-nighter'})
         if nighter != None:
             dayDict['nighter'] = True
@@ -34,14 +40,34 @@ def kyoteiGetCal(url):
         if summer != None:
             dayDict['summer'] = True
         morning = i.find('td', {'class': 'is-morning'})
-        if summer != None:
+        if morning != None:
             dayDict['morning'] = True
+        # 一般
+        ippan = i.find('td', {'class': 'is-ippan'})
+        if ippan != None:
+            dayDict['ippan'] = True
+        # SG
+        sg = i.find('td', {'class': "is-SGa"})
+        if sg != None:
+            dayDict["SG"] = True
+        # G1
+        g1 = i.find('td', {'class': "is-G1b"})
+        if g1 != None:
+            dayDict["G1"] = True
+        # G2
+        g2 = i.find('td', {'class': "is-G2b"})
+        if g2 != None:
+            dayDict["G2"] = True
+        # G3
+        g3 = i.find('td', {'class': "is-G3b"})
+        if g3 != None:
+            dayDict["G3"] = True
+        # レディース
+        lady = i.find('td', {'class': re.compile(".*is-lady")})
+        if lady != None:
+            dayDict['lady'] = True
         dayLs.append(dayDict)
     pprint(dayLs)
-
-
-def autoRaceGetCal(url):
-    pass
 
 
 def netkeibaGetCal(url):
