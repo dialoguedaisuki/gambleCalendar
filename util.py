@@ -6,21 +6,55 @@ from datetime import datetime, timedelta, date
 
 
 def autoRaceGetCal(url):
-    # https://www.oddspark.com/autorace/KaisaiRaceList.do?raceDy=20220609
-    pass
+    soup = urlToBs4(url)
+    baseTable = soup.find('table', {'class': "tb70 w100pr"})
+    loopTable = [i for i in baseTable.find_all("tr")]
+    dayLs = []
+    for i in loopTable:
+        dayDict = {}
+        jyoInfo = i.find('th', {'class': 'course'})
+        if jyoInfo != None:
+            jyo = jyoInfo.get_text(',').split(',')[0]
+            dayDict['jyo'] = jyo
+            try:
+                soutaiKaisaiDay = jyoInfo.get_text(',').split(',')[1]
+                dayDict['kaisaiDay'] = soutaiKaisaiDay
+            except Exception as e:
+                print(e)
+        raceName = i.find('ul', {'class': 'raceName'})
+        raceNameRawHtml = raceName.find("li")
+        mainRace = raceNameRawHtml.get_text().strip()
+        dayDict['mainRace'] = mainRace
+        raceNameLs = raceNameRawHtml.find_all('img')
+        for j in raceNameLs:
+            if j['alt'] in "G":
+                dayDict['class'] = j['alt']
+            if j['alt'] in "モーニング":
+                dayDict['morning'] = True
+            if j['alt'] in "ナイター":
+                dayDict['nighter'] = True
+            if j['alt'] in "ミッドナイト":
+                dayDict['midnight'] = True
+        dayLs.append(dayDict)
+    return dayLs
 
 
-def kyoteiMouthUrlParser():
-    baseUrl = "https://www.boatrace.jp/owpc/pc/race/index?hd="
-    d1 = date(2022, 6, 1)
-    d2 = date(2022, 6, 30)
+def MouthUrlParser(url, defdef):
+    baseUrl = url
+    d1 = date(2022, 6, 10)
+    d2 = date(2022, 6, 11)
+    dictLs = {}
     for i in range((d2 - d1).days + 1):
         execDay = d1 + timedelta(i)
         execDayStr = execDay.strftime("%Y%m%d")
-        insertDaySTr = execDay.strftime("%Y%m%d")
+        m = execDay.strftime("%m").lstrip('0')
+        d = execDay.strftime("%d").lstrip('0')
+        keyDay = f'{m}/{d}'
         url = f'{baseUrl}{execDayStr}'
-        print(execDayStr)
-        kyoteiGetCal(url)
+        dayLs = defdef(url)
+        dictLs[keyDay] = dayLs
+    pprint(dictLs)
+    return dictLs
 
 
 def kyoteiGetCal(url):
@@ -68,7 +102,6 @@ def kyoteiGetCal(url):
         if lady != None:
             dayDict['lady'] = True
         dayLs.append(dayDict)
-    pprint(dayLs)
     return dayLs
 
 
@@ -158,11 +191,12 @@ def urlToBs4(url):
     return soup
 
 
-# netkeirinSc(
-#     "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
-
-
-kyoteiMouthUrlParser()
+netkeirinSc(
+    "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
+autoRaceBaseurl = "https://www.oddspark.com/autorace/KaisaiRaceList.do?raceDy="
+MouthUrlParser(autoRaceBaseurl, autoRaceGetCal)
+kyoteiBaseUrl = "https://www.boatrace.jp/owpc/pc/race/index?hd="
+MouthUrlParser(kyoteiBaseUrl, kyoteiGetCal)
 
 # netkeibaGetCal(
 #     "https://nar.netkeiba.com/top/calendar.html?year=2022&month=6")
