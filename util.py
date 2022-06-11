@@ -27,7 +27,8 @@ def autoRaceGetCal(url):
         dayDict['mainRace'] = mainRace
         raceNameLs = raceNameRawHtml.find_all('img')
         for j in raceNameLs:
-            if j['alt'] in "G":
+            print(j['alt'])
+            if "G" in j['alt']:
                 dayDict['class'] = j['alt']
             if j['alt'] in "モーニング":
                 dayDict['morning'] = True
@@ -41,8 +42,8 @@ def autoRaceGetCal(url):
 
 def MouthUrlParser(url, defdef):
     baseUrl = url
-    d1 = date(2022, 6, 10)
-    d2 = date(2022, 6, 11)
+    d1 = date(2022, 6, 1)
+    d2 = date(2022, 6, 30)
     dictLs = {}
     for i in range((d2 - d1).days + 1):
         execDay = d1 + timedelta(i)
@@ -191,12 +192,12 @@ def urlToBs4(url):
     return soup
 
 
-netkeirinSc(
-    "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
+# netkeirinSc(
+#     "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
 autoRaceBaseurl = "https://www.oddspark.com/autorace/KaisaiRaceList.do?raceDy="
 MouthUrlParser(autoRaceBaseurl, autoRaceGetCal)
-kyoteiBaseUrl = "https://www.boatrace.jp/owpc/pc/race/index?hd="
-MouthUrlParser(kyoteiBaseUrl, kyoteiGetCal)
+# kyoteiBaseUrl = "https://www.boatrace.jp/owpc/pc/race/index?hd="
+# MouthUrlParser(kyoteiBaseUrl, kyoteiGetCal)
 
 # netkeibaGetCal(
 #     "https://nar.netkeiba.com/top/calendar.html?year=2022&month=6")
