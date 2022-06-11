@@ -12,11 +12,12 @@ def autoRaceGetCal(url):
 
 def kyoteiMouthUrlParser():
     baseUrl = "https://www.boatrace.jp/owpc/pc/race/index?hd="
-    d1 = date(2022, 6, 3)
-    d2 = date(2022, 6, 5)
+    d1 = date(2022, 6, 1)
+    d2 = date(2022, 6, 30)
     for i in range((d2 - d1).days + 1):
         execDay = d1 + timedelta(i)
         execDayStr = execDay.strftime("%Y%m%d")
+        insertDaySTr = execDay.strftime("%Y%m%d")
         url = f'{baseUrl}{execDayStr}'
         print(execDayStr)
         kyoteiGetCal(url)
@@ -45,29 +46,30 @@ def kyoteiGetCal(url):
         # 一般
         ippan = i.find('td', {'class': 'is-ippan'})
         if ippan != None:
-            dayDict['ippan'] = True
+            dayDict['Class'] = "ippan"
         # SG
         sg = i.find('td', {'class': "is-SGa"})
         if sg != None:
-            dayDict["SG"] = True
+            dayDict["Class"] = "SG"
         # G1
         g1 = i.find('td', {'class': "is-G1b"})
         if g1 != None:
-            dayDict["G1"] = True
+            dayDict["Class"] = "G1"
         # G2
         g2 = i.find('td', {'class': "is-G2b"})
         if g2 != None:
-            dayDict["G2"] = True
+            dayDict["Class"] = "G2"
         # G3
         g3 = i.find('td', {'class': "is-G3b"})
         if g3 != None:
-            dayDict["G3"] = True
+            dayDict["Class"] = "G3"
         # レディース
         lady = i.find('td', {'class': re.compile(".*is-lady")})
         if lady != None:
             dayDict['lady'] = True
         dayLs.append(dayDict)
     pprint(dayLs)
+    return dayLs
 
 
 def netkeibaGetCal(url):
@@ -156,8 +158,8 @@ def urlToBs4(url):
     return soup
 
 
-netkeirinSc(
-    "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
+# netkeirinSc(
+#     "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
 
 
 kyoteiMouthUrlParser()
