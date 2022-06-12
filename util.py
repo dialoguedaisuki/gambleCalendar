@@ -3,6 +3,7 @@ from pprint import pprint
 import requests
 import re
 from datetime import datetime, timedelta, date
+import json
 
 
 def autoRaceGetCal(url):
@@ -20,22 +21,21 @@ def autoRaceGetCal(url):
                 soutaiKaisaiDay = jyoInfo.get_text(',').split(',')[1]
                 dayDict['kaisaiDay'] = soutaiKaisaiDay
             except Exception as e:
-                print(e)
+                pass
         raceName = i.find('ul', {'class': 'raceName'})
         raceNameRawHtml = raceName.find("li")
         mainRace = raceNameRawHtml.get_text().strip()
         dayDict['mainRace'] = mainRace
         raceNameLs = raceNameRawHtml.find_all('img')
         for j in raceNameLs:
-            print(j['alt'])
             if "G" in j['alt']:
                 dayDict['class'] = j['alt']
             if j['alt'] in "モーニング":
-                dayDict['morning'] = True
+                dayDict['jikan'] = 'morning'
             if j['alt'] in "ナイター":
-                dayDict['nighter'] = True
+                dayDict['jikan'] = "nighter"
             if j['alt'] in "ミッドナイト":
-                dayDict['midnight'] = True
+                dayDict['jikan'] = "midnight"
         dayLs.append(dayDict)
     return dayLs
 
@@ -71,60 +71,74 @@ def kyoteiGetCal(url):
         # 開催種別
         nighter = i.find('td', {'class': 'is-nighter'})
         if nighter != None:
-            dayDict['nighter'] = True
+            dayDict['jikan'] = "nighter"
         summer = i.find('td', {'class': 'is-summer'})
         if summer != None:
-            dayDict['summer'] = True
+            dayDict['jikan'] = "summer"
         morning = i.find('td', {'class': 'is-morning'})
         if morning != None:
-            dayDict['morning'] = True
+            dayDict['jikan'] = "morning"
         # 一般
         ippan = i.find('td', {'class': 'is-ippan'})
         if ippan != None:
-            dayDict['Class'] = "ippan"
+            dayDict['class'] = "ippan"
         # SG
         sg = i.find('td', {'class': "is-SGa"})
         if sg != None:
-            dayDict["Class"] = "SG"
+            dayDict["class"] = "SG"
         # G1
         g1 = i.find('td', {'class': "is-G1b"})
         if g1 != None:
-            dayDict["Class"] = "G1"
+            dayDict["class"] = "G1"
         # G2
         g2 = i.find('td', {'class': "is-G2b"})
         if g2 != None:
-            dayDict["Class"] = "G2"
+            dayDict["class"] = "G2"
         # G3
         g3 = i.find('td', {'class': "is-G3b"})
         if g3 != None:
-            dayDict["Class"] = "G3"
+            dayDict["class"] = "G3"
         # レディース
         lady = i.find('td', {'class': re.compile(".*is-lady")})
         if lady != None:
-            dayDict['lady'] = True
+            dayDict['lady'] = "True"
         dayLs.append(dayDict)
     return dayLs
 
 
 def netkeibaGetCal(url):
+    plusMouth = datetime.now().strftime("%m").lstrip('0')
     soup = urlToBs4(url)
     table = soup.find('table', {'class': "Calendar_Table"})
     calTable = table.find_all("td", class_="RaceCellBox")
     kaisaiCal = []
     for cal in calTable:
+        dayDictLs = []
         kaisaiDay = cal.find('span', {'class': "Day"}).get_text()
         if kaisaiDay:
-            for i in cal.find_all('div', {'class': "kaisai_1"}):
+            for i in cal.find_all('div', {'class': re.compile("kaisai_.*")}):
+                dayDict = {}
+                nighter = i.find(
+                    'span', {'class': "Dart_calendar_Icon"})
+                if nighter != None:
+                    dayDict['jikan'] = "nighter"
+                jusho = i.find('span', {'class': 'Dart_calendar_Tag01'})
+                if jusho != None:
+                    dayDict['jusho'] = "True"
                 url = "https://nar.netkeiba.com/top/race_list_sub.html?kaisai_date="
                 a_tag = i.find("a")
-                href = a_tag.get("href")
-                kaisaiBasho = a_tag.find(
-                    'span', {'class': "JyoName"}).get_text()
-                url += re.findall(
-                    "\/top\/race_list.html\?kaisai_date=(.*)$", href)[0]
-                if a_tag and href:
-                    kaisaiCal.append([kaisaiDay, kaisaiBasho, url])
+                if a_tag != None:
+                    href = a_tag.get("href")
+                    url += re.findall(
+                        "\/top\/race_list.html\?kaisai_date=(.*)$", href)[0]
+                    dayDict['detailUrl'] = url
                     url = ""
+                kaisaiBasho = i.find(
+                    'span', {'class': "JyoName"}).get_text()
+                dayDict['jyo'] = kaisaiBasho
+                dayDictLs.append(dayDict)
+        if kaisaiDay != "":
+            kaisaiCal.append({f'{plusMouth}/{kaisaiDay}': dayDictLs})
     pprint(kaisaiCal)
     return kaisaiCal
 
@@ -154,26 +168,25 @@ def netkeirinSc(url):
             kaisaiGirls = jyo.find(
                 'span', {'class': "Icon_RaceMark Girls"})
             if kaisaiGirls != None:
-                girls = kaisaiGirls['aria-label']
-                dayDict['girls'] = True
+                dayDict['girls'] = "True"
             # ミッドナイト
             midnight = jyo.find(
                 'span', {'class': "Icon_RaceMark MidNight"})
             if midnight != None:
                 midnight = midnight['aria-label']
-                dayDict['midnight'] = True
+                dayDict['jikan'] = "midnight"
             # ナイター
             nighter = jyo.find(
                 'span', {'class': "Icon_RaceMark Nighter"})
             if nighter != None:
                 nighter = nighter['aria-label']
-                dayDict['nighter'] = True
+                dayDict['jikan'] = "nighter"
             # モーニング
             morning = jyo.find(
                 'span', {'class': "Icon_RaceMark Morning"})
             if morning != None:
                 morning = morning['aria-label']
-                dayDict['morning'] = True
+                dayDict['jikan'] = "morning"
             keirinLs.append(dayDict)
         mouthSchedule[kaisaiD] = keirinLs
     pprint(mouthSchedule)
@@ -192,12 +205,24 @@ def urlToBs4(url):
     return soup
 
 
-# netkeirinSc(
-#     "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
-autoRaceBaseurl = "https://www.oddspark.com/autorace/KaisaiRaceList.do?raceDy="
-MouthUrlParser(autoRaceBaseurl, autoRaceGetCal)
-# kyoteiBaseUrl = "https://www.boatrace.jp/owpc/pc/race/index?hd="
-# MouthUrlParser(kyoteiBaseUrl, kyoteiGetCal)
+def jsonDump(jsonRaw, filename):
+    with open(filename, 'w') as f:
+        json.dump(jsonRaw, f, ensure_ascii=False)
 
-# netkeibaGetCal(
-#     "https://nar.netkeiba.com/top/calendar.html?year=2022&month=6")
+
+keirinJson = netkeirinSc(
+    "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
+
+jsonRawKeiba = netkeibaGetCal(
+    "https://nar.netkeiba.com/top/calendar.html?year=2022&month=6")
+
+autoRaceBaseurl = "https://www.oddspark.com/autorace/KaisaiRaceList.do?raceDy="
+autoRaceLs = MouthUrlParser(autoRaceBaseurl, autoRaceGetCal)
+
+kyoteiBaseUrl = "https://www.boatrace.jp/owpc/pc/race/index?hd="
+kyoteiLs = MouthUrlParser(kyoteiBaseUrl, kyoteiGetCal)
+
+jsonDump(jsonRawKeiba, 'keiba.json')
+jsonDump(keirinJson, 'keirin.json')
+jsonDump(autoRaceLs, 'autorace.json')
+jsonDump(kyoteiLs, 'kyotei.json')
