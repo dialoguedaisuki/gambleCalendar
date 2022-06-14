@@ -81,7 +81,7 @@ def kyoteiGetCal(url):
         # 一般
         ippan = i.find('td', {'class': 'is-ippan'})
         if ippan != None:
-            dayDict['class'] = "ippan"
+            dayDict['class'] = "一般"
         # SG
         sg = i.find('td', {'class': "is-SGa"})
         if sg != None:
@@ -111,7 +111,7 @@ def netkeibaGetCal(url):
     soup = urlToBs4(url)
     table = soup.find('table', {'class': "Calendar_Table"})
     calTable = table.find_all("td", class_="RaceCellBox")
-    kaisaiCal = []
+    kaisaiCal = {}
     for cal in calTable:
         dayDictLs = []
         kaisaiDay = cal.find('span', {'class': "Day"}).get_text()
@@ -138,7 +138,7 @@ def netkeibaGetCal(url):
                 dayDict['jyo'] = kaisaiBasho
                 dayDictLs.append(dayDict)
         if kaisaiDay != "":
-            kaisaiCal.append({f'{plusMouth}/{kaisaiDay}': dayDictLs})
+            kaisaiCal[f'{plusMouth}/{kaisaiDay}'] = dayDictLs
     pprint(kaisaiCal)
     return kaisaiCal
 
