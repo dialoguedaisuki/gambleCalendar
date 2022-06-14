@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 from pprint import pprint
+from insertGoogleCal import *
 
 nowYear = '2022'
 
@@ -34,26 +35,32 @@ def jikanToDatetime(jikan, kaisaiDay):
     return returnStr, startTime, endTime
 
 
-keirinJson = json.load(open('./kyotei.json'))
+keirinJson = json.load(open('./keiba.json'))
+shubetuStr = "競馬"
+colorId = "4"
 for i in keirinJson.items():
-    # if i[0] == '6/14':
-    for j in i[1]:
-        classs = ""
-        if j.get('class') != None:
-            classs = j['class']
-        if j.get('class') == None:
+    if i[0] == '6/15':
+        for j in i[1]:
             classs = ""
-        if j.get('jikan') != None:
-            jyo = j['jyo']
-            jikan, startTime, endTime = jikanToDatetime(j['jikan'], i[0])
-            insStr = f'{jyo}{classs}{jikan}{startTime}{endTime}'
-            print(insStr)
-        else:
-            jyo = j['jyo']
-            startTime = datetime.strptime(
-                f'{nowYear}{i[0]} 12:00', '%Y%m/%d %H:%M')
-            endTime = datetime.strptime(
-                f'{nowYear}{i[0]} 17:00', '%Y%m/%d %H:%M')
-            jikan = "日中"
-            insStr = f'{jyo}{jikan}{startTime}{endTime}'
-            print(insStr)
+            if j.get('class') != None:
+                classs = j['class']
+            if j.get('class') == None:
+                classs = ""
+            if j.get('jikan') != None:
+                jyo = j['jyo']
+                jikan, startTime, endTime = jikanToDatetime(j['jikan'], i[0])
+                insStr = f'{jyo}{classs}{jikan}{startTime}{endTime}'
+                print(insStr)
+                insertGoogleCal(f'{jyo}{shubetuStr}',
+                                startTime, endTime, colorId)
+            else:
+                jyo = j['jyo']
+                startTime = datetime.strptime(
+                    f'{nowYear}{i[0]} 12:00', '%Y%m/%d %H:%M')
+                endTime = datetime.strptime(
+                    f'{nowYear}{i[0]} 17:00', '%Y%m/%d %H:%M')
+                jikan = "日中"
+                insStr = f'{jyo}{jikan}{startTime}{endTime}'
+                print(insStr)
+                insertGoogleCal(f'{jyo}{shubetuStr}',
+                                startTime, endTime, colorId)
