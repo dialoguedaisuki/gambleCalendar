@@ -2,8 +2,33 @@ from datetime import datetime
 import json
 from pprint import pprint
 from insertGoogleCal import *
+import configparser
+import sys
 
 nowYear = '2022'
+
+
+def auth_cal_id(envName):
+    config = configparser.ConfigParser()
+    config.read('setting.ini')
+    calId = config.get(envName, 'calId')
+    return calId
+
+
+def selectGamble(envName):
+    if envName == "kyotei":
+        shubetuStr = "競艇"
+        colorId = "1"
+    if envName == "keirin":
+        shubetuStr = "競輪"
+        colorId = "2"
+    if envName == "keiba":
+        shubetuStr = "競馬"
+        colorId = "3"
+    if envName == "autorace":
+        shubetuStr = "オートレース"
+        colorId = "4"
+    return shubetuStr, colorId
 
 
 def jikanToDatetime(jikan, kaisaiDay):
@@ -35,32 +60,34 @@ def jikanToDatetime(jikan, kaisaiDay):
     return returnStr, startTime, endTime
 
 
-keirinJson = json.load(open('./keiba.json'))
-shubetuStr = "競馬"
-colorId = "4"
+envName = sys.argv[1]
+calendarId = auth_cal_id(envName)
+shubetuStr, colorId = selectGamble(envName)
+keirinJson = json.load(open(f'{envName}.json'))
+
 for i in keirinJson.items():
-    if i[0] == '6/15':
-        for j in i[1]:
+    # if i[0] == '6/16':
+    for j in i[1]:
+        classs = ""
+        if j.get('class') != None:
+            classs = j['class']
+        if j.get('class') == None:
             classs = ""
-            if j.get('class') != None:
-                classs = j['class']
-            if j.get('class') == None:
-                classs = ""
-            if j.get('jikan') != None:
-                jyo = j['jyo']
-                jikan, startTime, endTime = jikanToDatetime(j['jikan'], i[0])
-                insStr = f'{jyo}{classs}{jikan}{startTime}{endTime}'
-                print(insStr)
-                insertGoogleCal(f'{jyo}{shubetuStr}',
-                                startTime, endTime, colorId)
-            else:
-                jyo = j['jyo']
-                startTime = datetime.strptime(
-                    f'{nowYear}{i[0]} 12:00', '%Y%m/%d %H:%M')
-                endTime = datetime.strptime(
-                    f'{nowYear}{i[0]} 17:00', '%Y%m/%d %H:%M')
-                jikan = "日中"
-                insStr = f'{jyo}{jikan}{startTime}{endTime}'
-                print(insStr)
-                insertGoogleCal(f'{jyo}{shubetuStr}',
-                                startTime, endTime, colorId)
+        if j.get('jikan') != None:
+            jyo = j['jyo']
+            jikan, startTime, endTime = jikanToDatetime(j['jikan'], i[0])
+            insStr = f'{jyo}{classs}{jikan}{startTime}{endTime}'
+            print(insStr)
+            insertGoogleCal(f'{jyo}{shubetuStr}',
+                            startTime, endTime, colorId, calendarId)
+        else:
+            jyo = j['jyo']
+            startTime = datetime.strptime(
+                f'{nowYear}{i[0]} 12:00', '%Y%m/%d %H:%M')
+            endTime = datetime.strptime(
+                f'{nowYear}{i[0]} 17:00', '%Y%m/%d %H:%M')
+            jikan = "日中"
+            insStr = f'{jyo}{jikan}{startTime}{endTime}'
+            print(insStr)
+            insertGoogleCal(f'{jyo}{shubetuStr}',
+                            startTime, endTime, colorId, calendarId)

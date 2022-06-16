@@ -6,13 +6,13 @@ import os
 from dotenv import load_dotenv
 
 
-def insertGoogleCal(title, startTime, endTime, colorId):
+def insertGoogleCal(title, startTime, endTime, colorId, calendarId):
     # .envファイルの内容を読み込見込む
     load_dotenv()
 
     # ①Google APIの準備をする
     SCOPES = ['https://www.googleapis.com/auth/calendar']
-    calendar_id = os.environ['calendar_id']
+    calendar_id = calendarId
     # Googleの認証情報をファイルから読み込む
     key_json_path = os.environ['key_json_path']
     gapi_creds = google.auth.load_credentials_from_file(key_json_path, SCOPES)[
