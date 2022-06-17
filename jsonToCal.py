@@ -63,9 +63,9 @@ def jikanToDatetime(jikan, kaisaiDay):
 envName = sys.argv[1]
 calendarId = auth_cal_id(envName)
 shubetuStr, colorId = selectGamble(envName)
-keirinJson = json.load(open(f'{envName}.json'))
+loadJson = json.load(open(f'{envName}.json'))
 
-for i in keirinJson.items():
+for i in loadJson.items():
     # if i[0] == '6/16':
     for j in i[1]:
         classs = ""
