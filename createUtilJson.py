@@ -1,5 +1,6 @@
 import json
 from pprint import pprint
+import csv
 
 hokkaido = ['北海道']
 tohoku = ['青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県']
@@ -47,6 +48,13 @@ def twoDimeLs(ls):
     return list(map(list, set(map(tuple, ls))))
 
 
+def listToCsv(fileName, listName):
+    with open(fileName, 'a', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f, lineterminator='\n')
+        writer.writerows(listName)
+    pass
+
+
 tyohukuLs = []
 cityDict = {}
 shubetu = ['keirin', 'autorace', 'keiba', 'kyotei']
@@ -58,7 +66,7 @@ for s in shubetu:
             tyohukuLs.append([j['jyo'], j['city']])
 
 tyohukuLsSet = twoDimeLs(tyohukuLs)
-# pprint(tyohukuLsSet)
+resultLs = []
 for i, j in tyohukuLsSet:
     cityDict['ken'] = j
     cityDict['jyo'] = i
@@ -66,4 +74,6 @@ for i, j in tyohukuLsSet:
     if result == None:
         print("none")
         break
-    print(result)
+    resultLs.append(result)
+pprint(resultLs)
+listToCsv('tikikubun.csv', resultLs)

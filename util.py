@@ -4,6 +4,7 @@ import requests
 import re
 from datetime import datetime, timedelta, date
 import json
+import csv
 import geocoder
 
 
@@ -18,7 +19,7 @@ def autoRaceGetCal(url):
         if jyoInfo != None:
             jyo = jyoInfo.get_text(',').split(',')[0]
             dayDict['jyo'] = jyo
-            dayDict['city'] = searchJyoToCityPlus(jyo, "オートレース場")
+            dayDict['ken'], dayDict['tiki'] = insertTikiAndKen(jyo)
             try:
                 soutaiKaisaiDay = jyoInfo.get_text(',').split(',')[1]
                 dayDict['kaisaiDay'] = soutaiKaisaiDay
@@ -44,8 +45,8 @@ def autoRaceGetCal(url):
 
 def MouthUrlParser(url, defdef):
     baseUrl = url
-    d1 = date(2022, 6, 1)
-    d2 = date(2022, 6, 30)
+    d1 = date(2022, 7, 1)
+    d2 = date(2022, 7, 31)
     dictLs = {}
     for i in range((d2 - d1).days + 1):
         execDay = d1 + timedelta(i)
@@ -70,7 +71,7 @@ def kyoteiGetCal(url):
         # 開催場所
         jyo = i.find("img")['alt']
         dayDict['jyo'] = jyo
-        dayDict['city'] = searchJyoToCityPlus(jyo, '競艇場')
+        dayDict['ken'], dayDict['tiki'] = insertTikiAndKen(jyo)
         # 開催種別
         nighter = i.find('td', {'class': 'is-nighter'})
         if nighter != None:
@@ -110,7 +111,8 @@ def kyoteiGetCal(url):
 
 
 def netkeibaGetCal(url):
-    plusMouth = datetime.now().strftime("%m").lstrip('0')
+    #plusMouth = datetime.now().strftime("%m").lstrip('0')
+    plusMouth = '7'
     soup = urlToBs4(url)
     table = soup.find('table', {'class': "Calendar_Table"})
     calTable = table.find_all("td", class_="RaceCellBox")
@@ -139,7 +141,8 @@ def netkeibaGetCal(url):
                 kaisaiBasho = i.find(
                     'span', {'class': "JyoName"}).get_text()
                 dayDict['jyo'] = kaisaiBasho
-                dayDict['city'] = searchJyoToCityPlus(kaisaiBasho, '競馬場')
+                dayDict['ken'], dayDict['tiki'] = insertTikiAndKen(
+                    kaisaiBasho)
                 dayDictLs.append(dayDict)
         if kaisaiDay != "":
             kaisaiCal[f'{plusMouth}/{kaisaiDay}'] = dayDictLs
@@ -164,7 +167,8 @@ def netkeirinSc(url):
             kaisaiJyo = jyo.find(
                 'p', {'class': "JyoName"}).get_text().strip()
             dayDict['jyo'] = kaisaiJyo
-            dayDict['city'] = searchJyoToCityPlus(kaisaiJyo, "競輪場")
+            dayDict['ken'], dayDict['tiki'] = insertTikiAndKen(kaisaiJyo)
+            #dayDict['city'] = searchJyoToCityPlus(kaisaiJyo, "競輪場")
             # クラス(F)
             kaisaiClass = jyo.find(
                 'span', {'class': re.compile("^Icon_GradeType Icon_GradeType*")}).get_text().strip()
@@ -235,7 +239,7 @@ def searchJyoToCityPlus(jyo, gambleGenre):
 
 
 def osmSearch(jyo):
-    ret = geocoder.osm(jyo, timeout=5.0)
+    ret = geocoder.osm(jyo, timeout=10.0)
     return ret
 
 
@@ -276,17 +280,33 @@ def urlToBs4(url):
     return soup
 
 
+def csvToList(csvname):
+    listName = []
+    with open(csvname) as f:
+        reader = csv.reader(f)
+        for r in reader:
+            listName.append(r)
+    return listName
+
+
+def insertTikiAndKen(jyo):
+    tikikubun = csvToList("tikikubun.csv")
+    for tiki in tikikubun:
+        if jyo == tiki[2]:
+            return [tiki[0], tiki[1]]
+
+
 def jsonDump(jsonRaw, filename):
     with open(filename, 'w') as f:
         json.dump(jsonRaw, f, ensure_ascii=False)
 
 
 jsonRawKeiba = netkeibaGetCal(
-    "https://nar.netkeiba.com/top/calendar.html?year=2022&month=6")
+    "https://nar.netkeiba.com/top/calendar.html?year=2022&month=7")
 jsonDump(jsonRawKeiba, 'keiba.json')
 
 keirinJson = netkeirinSc(
-    "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=6")
+    "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=7")
 jsonDump(keirinJson, 'keirin.json')
 
 autoRaceBaseurl = "https://www.oddspark.com/autorace/KaisaiRaceList.do?raceDy="
