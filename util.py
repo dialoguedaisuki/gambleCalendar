@@ -6,6 +6,11 @@ from datetime import datetime, timedelta, date
 import json
 import csv
 import geocoder
+from dateutil.relativedelta import relativedelta
+import sys
+
+kaisaiMouth = sys.argv[1]
+kaisaiYear = sys.argv[2]
 
 
 def autoRaceGetCal(url):
@@ -43,10 +48,12 @@ def autoRaceGetCal(url):
     return dayLs
 
 
-def MouthUrlParser(url, defdef):
+def MouthUrlParser(url, defdef, mouth):
     baseUrl = url
-    d1 = date(2022, 7, 1)
-    d2 = date(2022, 7, 31)
+    mouth = int(mouth)
+    d1 = date(int(kaisaiYear), mouth, 1)
+    d2 = date(int(kaisaiYear), mouth, 1) + \
+        relativedelta(months=1) - timedelta(days=1)
     dictLs = {}
     for i in range((d2 - d1).days + 1):
         execDay = d1 + timedelta(i)
@@ -112,7 +119,7 @@ def kyoteiGetCal(url):
 
 def netkeibaGetCal(url):
     #plusMouth = datetime.now().strftime("%m").lstrip('0')
-    plusMouth = '7'
+    plusMouth = kaisaiMouth
     soup = urlToBs4(url)
     table = soup.find('table', {'class': "Calendar_Table"})
     calTable = table.find_all("td", class_="RaceCellBox")
@@ -243,31 +250,6 @@ def osmSearch(jyo):
     return ret
 
 
-def searchJyoToCity(jyo):
-    print(jyo)
-    if jyo == "帯広ば":
-        jyo = "帯広"
-    if jyo == "山陽":
-        jyo = "山陽オートレース"
-    ret = geocoder.osm(jyo, timeout=5.0)
-    pprint(ret.json)
-    # キーがあったら格納してなかったら確認
-    try:
-        city = ret.json['raw']['address']['province']
-        print(city)
-    except:
-        ret_new = ret.json['address']
-        if jyo != "富山":
-            rawAdressLs = [i.strip() for i in ret_new.split(',')]
-            city = [
-                i for i in rawAdressLs if "県" in i or "都" in i or "府" in i or "道" in i][0]
-            print(city)
-        else:
-            city = "富山"
-            print("とやまとやまとやま")
-    return city
-
-
 def removeYoubi(youbi):
     newYoubi = re.sub(r'（.*）', '', youbi)
     return newYoubi
@@ -302,17 +284,17 @@ def jsonDump(jsonRaw, filename):
 
 
 jsonRawKeiba = netkeibaGetCal(
-    "https://nar.netkeiba.com/top/calendar.html?year=2022&month=7")
+    f'https://nar.netkeiba.com/top/calendar.html?year={kaisaiYear}&month={kaisaiMouth}')
 jsonDump(jsonRawKeiba, 'keiba.json')
 
 keirinJson = netkeirinSc(
-    "https://keirin.netkeiba.com/race/race_calendar/?kaisai_year=2022&kaisai_month=7")
+    f'https://keirin.netkeiba.com/race/race_calendar/?kaisai_year={kaisaiYear}&kaisai_month={kaisaiMouth}')
 jsonDump(keirinJson, 'keirin.json')
 
 autoRaceBaseurl = "https://www.oddspark.com/autorace/KaisaiRaceList.do?raceDy="
-autoRaceLs = MouthUrlParser(autoRaceBaseurl, autoRaceGetCal)
+autoRaceLs = MouthUrlParser(autoRaceBaseurl, autoRaceGetCal, kaisaiMouth)
 jsonDump(autoRaceLs, 'autorace.json')
 
 kyoteiBaseUrl = "https://www.boatrace.jp/owpc/pc/race/index?hd="
-kyoteiLs = MouthUrlParser(kyoteiBaseUrl, kyoteiGetCal)
+kyoteiLs = MouthUrlParser(kyoteiBaseUrl, kyoteiGetCal, kaisaiMouth)
 jsonDump(kyoteiLs, 'kyotei.json')
