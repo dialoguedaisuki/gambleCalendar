@@ -5,6 +5,16 @@ import google.auth
 import configparser
 from pprint import pprint
 from datetime import datetime as dt
+import sys
+
+dYear = sys.argv[1]
+dMouth = sys.argv[2]
+dDay = sys.argv[3]
+try:
+    dryRun = sys.argv[4]
+    dryRunFlag = False
+except:
+    dryRunFlag = True
 
 
 def auth_cal_id(envName):
@@ -27,7 +37,7 @@ def delYotei(eventId):
 
 # ①Google APIの準備をする
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-calendar_id = auth_cal_id("kyotei")
+calendar_id = auth_cal_id("autorace")
 # Googleの認証情報をファイルから読み込む
 gapi_creds = google.auth.load_credentials_from_file(
     'key.json', SCOPES)[0]
@@ -37,9 +47,7 @@ service = googleapiclient.discovery.build(
 
 
 # 削除する機関の頭を決定する
-now = datetime.datetime(2022, 7, 1).isoformat() + 'Z'
-# 今日いこう
-#now = datetime.datetime.utcnow().isoformat() + 'Z'
+now = datetime.datetime(int(dYear), int(dMouth), int(dDay)).isoformat() + 'Z'
 event_list = service.events().list(
     calendarId=calendar_id, timeMin=now,
     maxResults=10000, singleEvents=True,
@@ -51,10 +59,7 @@ for i in event_list['items']:
     rawDate = i['start']['dateTime']
     print(i['start']['dateTime'])
     ifLs = strToDatetime(rawDate)
-    # delYotei(i['id'])
-print(len(countLs))
-event_id = ""
-# 削除実行
-# service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
-
-# Dry Run　オプションをつける
+    if dryRunFlag:
+        print("No Dry Run")
+        delYotei(i['id'])
+print(f'処理件数:{len(countLs)}')
