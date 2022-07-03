@@ -5,8 +5,6 @@ from insertGoogleCal import *
 import configparser
 import sys
 
-nowYear = '2022'
-
 
 def auth_cal_id(envName):
     config = configparser.ConfigParser()
@@ -61,6 +59,7 @@ def jikanToDatetime(jikan, kaisaiDay):
 
 
 envName = sys.argv[1]
+nowYear = '2022'
 calendarId = auth_cal_id(envName)
 shubetuStr, colorId = selectGamble(envName)
 loadJson = json.load(open(f'{envName}.json'))

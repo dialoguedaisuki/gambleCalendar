@@ -7,11 +7,12 @@ from pprint import pprint
 from datetime import datetime as dt
 import sys
 
-dYear = sys.argv[1]
-dMouth = sys.argv[2]
-dDay = sys.argv[3]
+shubetu = sys.argv[1]
+dYear = sys.argv[2]
+dMouth = sys.argv[3]
+dDay = sys.argv[4]
 try:
-    dryRun = sys.argv[4]
+    dryRun = sys.argv[5]
     dryRunFlag = False
 except:
     dryRunFlag = True
@@ -37,7 +38,7 @@ def delYotei(eventId):
 
 # ①Google APIの準備をする
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-calendar_id = auth_cal_id("autorace")
+calendar_id = auth_cal_id(shubetu)
 # Googleの認証情報をファイルから読み込む
 gapi_creds = google.auth.load_credentials_from_file(
     'key.json', SCOPES)[0]
