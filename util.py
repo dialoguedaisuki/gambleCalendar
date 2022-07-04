@@ -9,9 +9,6 @@ import geocoder
 from dateutil.relativedelta import relativedelta
 import sys
 
-kaisaiMouth = sys.argv[1]
-kaisaiYear = sys.argv[2]
-
 
 def autoRaceGetCal(url):
     soup = urlToBs4(url)
@@ -48,7 +45,7 @@ def autoRaceGetCal(url):
     return dayLs
 
 
-def MouthUrlParser(url, defdef, mouth):
+def MouthUrlParser(url, defdef, mouth, kaisaiYear):
     baseUrl = url
     mouth = int(mouth)
     d1 = date(int(kaisaiYear), mouth, 1)
@@ -117,7 +114,7 @@ def kyoteiGetCal(url):
     return dayLs
 
 
-def netkeibaGetCal(url):
+def netkeibaGetCal(url, kaisaiMouth):
     #plusMouth = datetime.now().strftime("%m").lstrip('0')
     plusMouth = kaisaiMouth
     soup = urlToBs4(url)
@@ -281,20 +278,3 @@ def insertTikiAndKen(jyo):
 def jsonDump(jsonRaw, filename):
     with open(filename, 'w') as f:
         json.dump(jsonRaw, f, ensure_ascii=False)
-
-
-jsonRawKeiba = netkeibaGetCal(
-    f'https://nar.netkeiba.com/top/calendar.html?year={kaisaiYear}&month={kaisaiMouth}')
-jsonDump(jsonRawKeiba, 'keiba.json')
-
-keirinJson = netkeirinSc(
-    f'https://keirin.netkeiba.com/race/race_calendar/?kaisai_year={kaisaiYear}&kaisai_month={kaisaiMouth}')
-jsonDump(keirinJson, 'keirin.json')
-
-autoRaceBaseurl = "https://www.oddspark.com/autorace/KaisaiRaceList.do?raceDy="
-autoRaceLs = MouthUrlParser(autoRaceBaseurl, autoRaceGetCal, kaisaiMouth)
-jsonDump(autoRaceLs, 'autorace.json')
-
-kyoteiBaseUrl = "https://www.boatrace.jp/owpc/pc/race/index?hd="
-kyoteiLs = MouthUrlParser(kyoteiBaseUrl, kyoteiGetCal, kaisaiMouth)
-jsonDump(kyoteiLs, 'kyotei.json')
