@@ -58,19 +58,42 @@ def jikanToDatetime(jikan, kaisaiDay):
     return returnStr, startTime, endTime
 
 
+def judgeKubun(kubun):
+    if kubun == "kanto":
+        return ['関東', kubun]
+    if kubun == "tyuokoti":
+        return []
+    if kubun == "hokkaido":
+        return []
+    if kubun == "tohoku":
+        return []
+    if kubun == "hokuriku":
+        return []
+    if kubun == "tokai":
+        return []
+    if kubun == "kinki":
+        return []
+    if kubun == "tyugoku":
+        return []
+    if kubun == "sikoku":
+        return []
+    if kubun == "kyushu":
+        return []
+
+
 envName = sys.argv[1]
 kubunName = sys.argv[2]
 nowYear = '2022'
-calendarId = auth_cal_id("kanto")
+calendarId = auth_cal_id("tokai")
 shubetuStr, colorId = selectGamble(envName)
-colorId = 2
+colorId = 1
 
 loadJson = json.load(open(f'{envName}.json'))
 
 for i in loadJson.items():
     # if i[0] == '7/14':
     for j in i[1]:
-        if j.get('ken') == "関東":
+        if j.get('ken') == "東海":
             classs = ""
             if j.get('class') != None:
                 classs = j['class']
