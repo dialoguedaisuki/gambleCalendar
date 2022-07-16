@@ -17,13 +17,13 @@ if shubetuFlag == "keirin":
         f'https://keirin.netkeiba.com/race/race_calendar/?kaisai_year={kaisaiYear}&kaisai_month={kaisaiMouth}')
     jsonDump(keirinJson, 'keirin.json')
 
-if shubetuFlag == "kyotei":
+if shubetuFlag == "autorace":
     autoRaceBaseurl = "https://www.oddspark.com/autorace/KaisaiRaceList.do?raceDy="
     autoRaceLs = MouthUrlParser(
         autoRaceBaseurl, autoRaceGetCal, kaisaiMouth, kaisaiYear)
     jsonDump(autoRaceLs, 'autorace.json')
 
-if shubetuFlag == "autorace":
+if shubetuFlag == "kyotei":
     kyoteiBaseUrl = "https://www.boatrace.jp/owpc/pc/race/index?hd="
     kyoteiLs = MouthUrlParser(
         kyoteiBaseUrl, kyoteiGetCal, kaisaiMouth, kaisaiYear)

@@ -93,7 +93,7 @@ loadJson = json.load(open(f'{envName}.json'))
 for i in loadJson.items():
     # if i[0] == '7/14':
     for j in i[1]:
-        if j.get('ken') == "東海":
+        if j.get('ken') == "近畿":
             classs = ""
             if j.get('class') != None:
                 classs = j['class']
