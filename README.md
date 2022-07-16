@@ -1,7 +1,7 @@
 # オケラカレンダー
 ## カレンダー
 - [競技別オケラカレンダー](https://dialoguedaisuki.github.io/gambleCalendar/)
-- [地域別オケラカレンダー]()
+- [地域別オケラカレンダー](https://dialoguedaisuki.github.io/gambleCalendar/kanto.html)
 
 ## 使い方
 - Jsonを取得する
