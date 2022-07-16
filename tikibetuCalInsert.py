@@ -84,7 +84,7 @@ def judgeKubun(kubun):
 envName = sys.argv[1]
 kubunName = sys.argv[2]
 nowYear = '2022'
-calendarId = auth_cal_id("tokai")
+calendarId = auth_cal_id("kinki")
 shubetuStr, colorId = selectGamble(envName)
 colorId = 1
 
